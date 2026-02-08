@@ -21,6 +21,7 @@ from starlette.responses import JSONResponse, Response
 
 from app.config import settings
 from app.db.pool import get_connection
+from app.dependencies import resolve_client_ip
 
 logger = logging.getLogger(__name__)
 
@@ -38,17 +39,6 @@ RATE_LIMITS = [
     ("email", 10, 60),
     ("ip_email", 5, 60),
 ]
-
-
-def _get_client_ip(request: Request) -> str:
-    """Extract the client IP address, respecting X-Forwarded-For."""
-    forwarded = request.headers.get("x-forwarded-for")
-    if forwarded:
-        # Take the first (leftmost) IP — the original client
-        return forwarded.split(",")[0].strip()
-    if request.client:
-        return request.client.host
-    return "unknown"
 
 
 async def _check_rate_limit(
@@ -152,7 +142,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         if request.method != "POST" or path not in RATE_LIMITED_PATHS:
             return await call_next(request)
 
-        client_ip = _get_client_ip(request)
+        client_ip = resolve_client_ip(request)
 
         # Try to extract email for more granular rate limiting
         email = await _extract_email_from_body(request)

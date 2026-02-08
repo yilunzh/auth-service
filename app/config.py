@@ -37,6 +37,19 @@ class Settings(BaseSettings):
             return []
         return [origin.strip() for origin in self.CORS_ORIGINS.split(",") if origin.strip()]
 
+    # Trusted proxies (for X-Forwarded-For)
+    TRUSTED_PROXIES: str = ""
+
+    @property
+    def trusted_proxies_list(self) -> list[str]:
+        """Parse TRUSTED_PROXIES comma-separated string into a list.
+
+        Supports individual IPs and CIDR ranges (e.g. "10.0.0.1,172.16.0.0/12").
+        """
+        if not self.TRUSTED_PROXIES:
+            return []
+        return [p.strip() for p in self.TRUSTED_PROXIES.split(",") if p.strip()]
+
     # Argon2 password hashing
     ARGON2_TIME_COST: int = 2
     ARGON2_MEMORY_COST: int = 32768
