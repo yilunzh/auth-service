@@ -19,6 +19,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 
+from app.config import settings
 from app.db.pool import get_connection
 
 logger = logging.getLogger(__name__)
@@ -28,6 +29,7 @@ RATE_LIMITED_PATHS = {
     "/api/auth/login",
     "/api/auth/register",
     "/api/auth/forgot-password",
+    "/api/auth/refresh",
 }
 
 # Limits: (key_type, max_attempts, window_seconds)
@@ -187,8 +189,12 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                         )
 
         except Exception:
-            # If rate limiting fails (e.g., DB down), allow the request through
-            # rather than blocking legitimate users. Log the error.
-            logger.exception("Rate limit check failed — allowing request through")
+            # If rate limiting fails (e.g., DB down), behaviour depends on config.
+            logger.exception("Rate limit check failed")
+            if not settings.RATE_LIMIT_FAIL_OPEN:
+                return JSONResponse(
+                    status_code=503,
+                    content={"detail": "Service temporarily unavailable. Please try again later."},
+                )
 
         return await call_next(request)

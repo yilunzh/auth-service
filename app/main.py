@@ -20,6 +20,35 @@ from app.middleware.rate_limit import RateLimitMiddleware
 from app.middleware.security import SecurityHeadersMiddleware
 from app.services.breach_check import init_bloom_filter
 
+_DEFAULT_JWT_SECRET = "CHANGE-ME-IN-PRODUCTION"
+
+logger = logging.getLogger(__name__)
+
+
+def _validate_jwt_secret() -> None:
+    """Validate the JWT secret key at startup.
+
+    Raises RuntimeError in production (DEBUG=False) if the secret is still the
+    default value, empty, or shorter than 16 characters.
+    """
+    secret = settings.JWT_SECRET_KEY
+    is_default = secret == _DEFAULT_JWT_SECRET
+
+    if is_default and settings.DEBUG:
+        logger.warning(
+            "JWT_SECRET_KEY is set to the default value — acceptable for development only"
+        )
+        return
+
+    if is_default:
+        raise RuntimeError(
+            "JWT_SECRET_KEY is still the default value. "
+            "Set a strong, unique secret before running in production."
+        )
+
+    if not secret or len(secret) < 16:
+        raise RuntimeError("JWT_SECRET_KEY must be at least 16 characters long.")
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -32,6 +61,9 @@ async def lifespan(app: FastAPI):
     )
     logging.getLogger("aiomysql").setLevel(logging.WARNING)
     logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
+
+    # Validate JWT secret before anything else
+    _validate_jwt_secret()
 
     # Startup
     await init_pool(settings)
