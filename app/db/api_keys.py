@@ -32,7 +32,7 @@ async def create_api_key(
         )
         await conn.commit()
 
-    return await get_api_key_by_id(conn, id)
+    return await get_api_key_by_id(conn, id)  # type: ignore[return-value]
 
 
 async def get_api_key_by_hash(conn, key_hash: str) -> dict | None:

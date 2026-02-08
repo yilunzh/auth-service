@@ -77,14 +77,14 @@ async def query_audit_log(
     async with conn.cursor(aiomysql.DictCursor) as cur:
         # Total count
         await cur.execute(
-            f"SELECT COUNT(*) AS cnt FROM audit_log {where_clause}",
+            f"SELECT COUNT(*) AS cnt FROM audit_log {where_clause}",  # nosec B608
             tuple(params),
         )
         total = (await cur.fetchone())["cnt"]
 
         # Paginated results
         await cur.execute(
-            f"SELECT * FROM audit_log {where_clause} ORDER BY created_at DESC LIMIT %s OFFSET %s",
+            f"SELECT * FROM audit_log {where_clause} ORDER BY created_at DESC LIMIT %s OFFSET %s",  # nosec B608
             tuple(params) + (per_page, offset),
         )
         rows = await cur.fetchall()

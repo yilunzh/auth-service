@@ -43,7 +43,7 @@ def _optimal_params(n: int, fp_rate: float = 0.001) -> tuple[int, int]:
 def _get_bit_positions(item: str, num_bits: int, num_hashes: int) -> list[int]:
     """Compute bit positions using double hashing (SHA-256 + MD5)."""
     h1 = int(hashlib.sha256(item.encode("utf-8")).hexdigest(), 16)
-    h2 = int(hashlib.md5(item.encode("utf-8")).hexdigest(), 16)
+    h2 = int(hashlib.md5(item.encode("utf-8")).hexdigest(), 16)  # nosec B324
     return [(h1 + i * h2) % num_bits for i in range(num_hashes)]
 
 

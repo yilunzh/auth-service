@@ -1,6 +1,9 @@
 -r requirements.txt
 pytest
 pytest-asyncio
+pytest-cov
 httpx
 locust
 ruff
+mypy
+bandit

@@ -21,6 +21,29 @@ jobs:
       - run: ruff check .
       - run: ruff format --check .
 
+  type-check:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: pip install -r requirements.txt && pip install mypy
+      - run: python -m mypy app/
+
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install bandit
+      - run: python -m bandit -r app/ -c pyproject.toml
+
   unit-tests:
     runs-on: ubuntu-latest
     strategy:
@@ -31,8 +54,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - run: pip install -r requirements.txt && pip install pytest "pytest-asyncio>=1.0,<2.0" httpx cryptography
-      - run: python -m pytest tests/unit -v
+      - run: pip install -r requirements.txt && pip install pytest "pytest-asyncio>=1.0,<2.0" pytest-cov httpx cryptography
+      - run: python -m pytest tests/unit -v --cov=app --cov-report=term-missing
 
   integration-tests:
     runs-on: ubuntu-latest
@@ -58,8 +81,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - run: pip install -r requirements.txt && pip install pytest "pytest-asyncio>=1.0,<2.0" httpx cryptography
-      - run: python -m pytest tests/integration -v
+      - run: pip install -r requirements.txt && pip install pytest "pytest-asyncio>=1.0,<2.0" pytest-cov httpx cryptography
+      - run: python -m pytest tests/integration -v --cov=app --cov-report=term-missing
 
   docker-build:
     runs-on: ubuntu-latest
