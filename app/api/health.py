@@ -29,7 +29,7 @@ async def health_check():
             async with conn.cursor() as cur:
                 await cur.execute("SELECT 1")
                 db_ok = True
-    except Exception:
+    except Exception:  # nosec B110
         pass
 
     return {

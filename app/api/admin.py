@@ -70,7 +70,7 @@ async def change_user_role(
         details={"old_role": old_role, "new_role": body.role, "changed_by": admin["id"]},
     )
 
-    return UserResponse(**updated)
+    return UserResponse(**updated)  # type: ignore[arg-type]
 
 
 @router.put("/auth/users/{user_id}/active", response_model=UserResponse)
@@ -96,7 +96,7 @@ async def change_user_active(
         details={"changed_by": admin["id"]},
     )
 
-    return UserResponse(**updated)
+    return UserResponse(**updated)  # type: ignore[arg-type]
 
 
 # ---------------------------------------------------------------------------

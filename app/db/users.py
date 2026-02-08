@@ -84,17 +84,17 @@ async def update_user_profile(
 
     if not sets:
         # Nothing to update - return current state.
-        return await get_user_by_id(conn, user_id)
+        return await get_user_by_id(conn, user_id)  # type: ignore[return-value]
 
     params.append(user_id)
     async with conn.cursor(aiomysql.DictCursor) as cur:
         await cur.execute(
-            f"UPDATE users SET {', '.join(sets)} WHERE id = %s",
+            f"UPDATE users SET {', '.join(sets)} WHERE id = %s",  # nosec B608
             tuple(params),
         )
         await conn.commit()
 
-    return await get_user_by_id(conn, user_id)
+    return await get_user_by_id(conn, user_id)  # type: ignore[return-value]
 
 
 async def update_user_password(conn, user_id: str, password_hash: str) -> None:

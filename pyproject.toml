@@ -14,6 +14,24 @@ markers = [
     "load: Load tests (requires running server)",
 ]
 
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = false
+warn_unused_configs = true
+ignore_missing_imports = true
+exclude = [".claude", "tests"]
+
+[tool.coverage.run]
+source = ["app"]
+omit = ["app/db/migrations/*"]
+
+[tool.coverage.report]
+fail_under = 45
+show_missing = true
+
+[tool.bandit]
+exclude_dirs = ["tests", ".claude"]
+
 [tool.ruff]
 line-length = 100
 target-version = "py311"

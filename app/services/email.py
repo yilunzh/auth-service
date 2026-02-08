@@ -23,7 +23,7 @@ async def send_email(to: str, subject: str, html_body: str) -> None:
     """
     try:
         await aiosmtplib.send(
-            message=_build_message(to, subject, html_body),
+            _build_message(to, subject, html_body),
             hostname=settings.SMTP_HOST,
             port=settings.SMTP_PORT,
             username=settings.SMTP_USER or None,
