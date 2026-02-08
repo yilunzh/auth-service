@@ -1,0 +1,428 @@
+/* Auth Service Stylesheet
+ * Stripe/Linear/Clerk-inspired minimal design
+ * Auto dark mode via prefers-color-scheme
+ * Themed via CSS custom properties
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+/* ============================================
+   Design Tokens
+   ============================================ */
+
+:root {
+    --auth-primary: #2563eb;
+    --auth-primary-hover: #1d4ed8;
+    --auth-bg: #f8fafc;
+    --auth-card-bg: #ffffff;
+    --auth-text: #0f172a;
+    --auth-text-muted: #64748b;
+    --auth-border: #e2e8f0;
+    --auth-error: #dc2626;
+    --auth-success: #16a34a;
+    --auth-radius: 8px;
+    --auth-font: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --auth-bg: #0f172a;
+        --auth-card-bg: #1e293b;
+        --auth-text: #f1f5f9;
+        --auth-text-muted: #94a3b8;
+        --auth-border: #334155;
+    }
+}
+
+/* ============================================
+   Reset & Base
+   ============================================ */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--auth-bg);
+    font-family: var(--auth-font);
+    color: var(--auth-text);
+    padding: 1rem;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================
+   Layout
+   ============================================ */
+
+.auth-container {
+    width: 100%;
+    max-width: 400px;
+}
+
+.auth-card {
+    width: 100%;
+    background-color: var(--auth-card-bg);
+    padding: 2rem;
+    border-radius: var(--auth-radius);
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--auth-border);
+}
+
+/* ============================================
+   Logo
+   ============================================ */
+
+.auth-logo {
+    max-height: 40px;
+    margin-bottom: 1.5rem;
+    display: block;
+}
+
+/* ============================================
+   Typography
+   ============================================ */
+
+h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    text-align: center;
+    color: var(--auth-text);
+}
+
+.auth-message {
+    font-size: 0.875rem;
+    color: var(--auth-text-muted);
+    text-align: center;
+    margin-top: 0.75rem;
+    line-height: 1.6;
+}
+
+/* ============================================
+   Form Layout
+   ============================================ */
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    margin-top: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+}
+
+/* ============================================
+   Labels
+   ============================================ */
+
+label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--auth-text);
+}
+
+/* ============================================
+   Inputs
+   ============================================ */
+
+input[type="email"],
+input[type="password"],
+input[type="text"] {
+    width: 100%;
+    padding: 0.625rem 0.75rem;
+    border: 1px solid var(--auth-border);
+    border-radius: var(--auth-radius);
+    font-size: 0.875rem;
+    font-family: var(--auth-font);
+    background-color: transparent;
+    color: var(--auth-text);
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+input[type="email"]::placeholder,
+input[type="password"]::placeholder,
+input[type="text"]::placeholder {
+    color: var(--auth-text-muted);
+    opacity: 0.6;
+}
+
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="text"]:focus {
+    border-color: var(--auth-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+input[type="email"].input-error,
+input[type="password"].input-error,
+input[type="text"].input-error {
+    border-color: var(--auth-error);
+}
+
+input[type="email"].input-error:focus,
+input[type="password"].input-error:focus,
+input[type="text"].input-error:focus {
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+/* ============================================
+   Password Wrapper & Toggle
+   ============================================ */
+
+.password-wrapper {
+    position: relative;
+    display: flex;
+}
+
+.password-wrapper input {
+    padding-right: 3.5rem;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: var(--auth-text-muted);
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-family: var(--auth-font);
+    font-weight: 500;
+    padding: 0.25rem;
+    line-height: 1;
+    user-select: none;
+}
+
+.toggle-password:hover {
+    color: var(--auth-text);
+}
+
+/* ============================================
+   Buttons
+   ============================================ */
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-family: var(--auth-font);
+    border-radius: var(--auth-radius);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 0.625rem;
+    background-color: var(--auth-primary);
+    color: #ffffff;
+    border: none;
+    border-radius: var(--auth-radius);
+    font-size: 0.875rem;
+    font-family: var(--auth-font);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-primary:hover {
+    background-color: var(--auth-primary-hover);
+}
+
+.btn-primary:focus-visible {
+    outline: 2px solid var(--auth-primary);
+    outline-offset: 2px;
+}
+
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Loading state */
+.btn-primary.loading {
+    position: relative;
+    color: transparent;
+    pointer-events: none;
+}
+
+.btn-primary.loading::after {
+    content: '';
+    position: absolute;
+    width: 1rem;
+    height: 1rem;
+    top: 50%;
+    left: 50%;
+    margin-top: -0.5rem;
+    margin-left: -0.5rem;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+/* ============================================
+   Links
+   ============================================ */
+
+.forgot-link {
+    font-size: 0.8125rem;
+    color: var(--auth-text-muted);
+    text-align: right;
+    text-decoration: none;
+    margin-top: 0.125rem;
+}
+
+.forgot-link:hover {
+    color: var(--auth-primary);
+}
+
+.auth-footer {
+    text-align: center;
+    font-size: 0.875rem;
+    color: var(--auth-text-muted);
+    margin-top: 1.5rem;
+}
+
+.auth-footer a {
+    color: var(--auth-primary);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.auth-footer a:hover {
+    text-decoration: underline;
+}
+
+/* ============================================
+   Password Strength Indicator
+   ============================================ */
+
+.password-strength {
+    height: 4px;
+    background-color: var(--auth-border);
+    border-radius: 2px;
+    margin-top: 0.25rem;
+    overflow: hidden;
+}
+
+.strength-bar {
+    height: 100%;
+    width: 0%;
+    transition: width 0.3s ease, background-color 0.3s ease;
+    border-radius: 2px;
+}
+
+.strength-bar.weak {
+    width: 33%;
+    background-color: var(--auth-error);
+}
+
+.strength-bar.fair {
+    width: 66%;
+    background-color: #eab308;
+}
+
+.strength-bar.strong {
+    width: 100%;
+    background-color: var(--auth-success);
+}
+
+.strength-label {
+    font-size: 0.75rem;
+    color: var(--auth-text-muted);
+    display: block;
+    min-height: 1.125rem;
+}
+
+/* ============================================
+   Alerts / Banners
+   ============================================ */
+
+.alert {
+    padding: 0.75rem 1rem;
+    border-radius: var(--auth-radius);
+    margin-bottom: 1.25rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.alert-success {
+    background-color: rgba(22, 163, 74, 0.1);
+    color: var(--auth-success);
+    border: 1px solid rgba(22, 163, 74, 0.2);
+}
+
+.alert-error {
+    background-color: rgba(220, 38, 38, 0.1);
+    color: var(--auth-error);
+    border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
+/* ============================================
+   Field Errors
+   ============================================ */
+
+.field-error {
+    font-size: 0.75rem;
+    color: var(--auth-error);
+    margin-top: 0.25rem;
+    min-height: 0;
+    display: block;
+}
+
+.field-error:empty {
+    display: none;
+}
+
+/* ============================================
+   Animations
+   ============================================ */
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ============================================
+   Responsive
+   ============================================ */
+
+@media (max-width: 480px) {
+    body {
+        padding: 0.75rem;
+    }
+
+    .auth-card {
+        padding: 1.5rem;
+        box-shadow: none;
+        border-left: none;
+        border-right: none;
+        border-radius: 0;
+    }
+
+    h1 {
+        font-size: 1.25rem;
+    }
+}
