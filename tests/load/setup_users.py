@@ -104,8 +104,14 @@ def main():
     parser = argparse.ArgumentParser(description="Create load test users")
     parser.add_argument("--count", type=int, default=1000, help="Number of regular users to create")
     parser.add_argument("--admins", type=int, default=10, help="Number of admin users to create")
-    parser.add_argument("--flush-rate-limits", action="store_true", help="Truncate rate_limits table")
-    parser.add_argument("--cleanup-registrations", action="store_true", help="Delete loadreg-* users from previous runs")
+    parser.add_argument(
+        "--flush-rate-limits", action="store_true", help="Truncate rate_limits table"
+    )
+    parser.add_argument(
+        "--cleanup-registrations",
+        action="store_true",
+        help="Delete loadreg-* users from previous runs",
+    )
     args = parser.parse_args()
     asyncio.run(run(args))
 
