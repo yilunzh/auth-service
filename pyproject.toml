@@ -5,6 +5,7 @@ requires-python = ">=3.11"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
 testpaths = ["tests"]
 markers = [
     "unit: Unit tests (no DB required)",
@@ -15,6 +16,7 @@ markers = [
 [tool.ruff]
 line-length = 100
 target-version = "py311"
+exclude = [".claude"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "W"]
