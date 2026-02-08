@@ -202,7 +202,9 @@ curl -X DELETE http://localhost:8000/api/keys/<key_id> \
 
 ## Hosted Pages
 
-Browser-accessible auth forms are served at:
+The auth service ships browser-ready HTML pages with professional styling, dark mode support, password strength indicators, and CSRF protection. You can redirect users to these pages instead of building your own auth UI.
+
+### Routes
 
 | URL | Description |
 |-----|-------------|
@@ -212,7 +214,41 @@ Browser-accessible auth forms are served at:
 | `/auth/reset-password` | Reset password form (with token) |
 | `/auth/verify-email` | Email verification (with token) |
 
-These pages include CSRF protection and can be used as a standalone auth UI or embedded via iframe/redirect.
+### Walkthrough
+
+**1. Register**
+
+Open `http://localhost:8000/auth/register` in a browser. Fill in an email and password, then submit. The page redirects to `/auth/login` with a "Check your email to verify your account" banner.
+
+**2. Verify email (dev shortcut)**
+
+SMTP isn't configured in development, so verify the user directly in MySQL:
+
+```bash
+docker compose exec mysql mysql -u auth_user -pauth_pass auth_db \
+  -e "UPDATE users SET is_verified = 1 WHERE email = 'alice@example.com';"
+```
+
+In production, the user clicks a link like `/auth/verify-email?token=<token>` — this is a GET endpoint that auto-verifies on page load (no form to fill out).
+
+**3. Login**
+
+Open `http://localhost:8000/auth/login`. Enter the verified user's credentials and submit. On success the page redirects to `/` (or to a custom `redirect_uri` if one was provided as a query parameter).
+
+**4. Forgot password**
+
+Open `http://localhost:8000/auth/forgot-password`. Enter an email and submit. The page always shows "If an account exists, a reset link has been sent" (prevents email enumeration). The reset link points to `/auth/reset-password?token=<token>`, where the user sets a new password and is redirected back to login.
+
+### Hosted Pages vs API — When to Use Which
+
+The auth service offers two integration patterns:
+
+| | **Hosted pages** | **API + your own UI** |
+|---|---|---|
+| **How it works** | Redirect users to `/auth/login`, `/auth/register`, etc. | Call `/api/auth/*` endpoints from your frontend |
+| **Best for** | Server-rendered apps, quick prototypes, admin tools | SPAs, mobile apps, custom-branded auth flows |
+| **Effort** | Zero frontend code — just link to the pages | You build the forms and handle tokens yourself |
+| **Customization** | Limited to CSS overrides and `redirect_uri` | Full control over UX and branding |
 
 ## Authentication Guide
 
