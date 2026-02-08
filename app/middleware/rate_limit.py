@@ -13,7 +13,6 @@ from __future__ import annotations
 
 import json
 import logging
-import time
 from datetime import datetime, timedelta, timezone
 
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -83,9 +82,9 @@ async def _check_rate_limit(
 
         # Check if currently blocked
         if blocked_until and blocked_until.replace(tzinfo=timezone.utc) > now:
-            retry_after = int(
-                (blocked_until.replace(tzinfo=timezone.utc) - now).total_seconds()
-            ) + 1
+            retry_after = (
+                int((blocked_until.replace(tzinfo=timezone.utc) - now).total_seconds()) + 1
+            )
             return (False, retry_after)
 
         # Check if the window has expired — reset

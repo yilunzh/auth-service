@@ -1,8 +1,6 @@
 """Integration tests for admin API endpoints."""
 
-import pytest
-
-from tests.integration.conftest import TEST_PASSWORD, _create_user, _login_user
+from tests.integration.conftest import _create_user
 
 
 class TestListUsers:

@@ -178,9 +178,7 @@ class AsyncAuthClient(BaseClientConfig):
         return _parse_user(resp.json())
 
     async def change_user_active(self, user_id: str, is_active: bool) -> User:
-        resp = await self._put(
-            f"/api/auth/users/{user_id}/active", json={"is_active": is_active}
-        )
+        resp = await self._put(f"/api/auth/users/{user_id}/active", json={"is_active": is_active})
         return _parse_user(resp.json())
 
     async def get_audit_log(

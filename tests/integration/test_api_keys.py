@@ -1,9 +1,5 @@
 """Integration tests for API key management endpoints."""
 
-import pytest
-
-from tests.integration.conftest import TEST_PASSWORD, _create_user, _login_user
-
 
 class TestCreateKey:
     async def test_create_api_key(self, test_client, admin_headers, db_conn):

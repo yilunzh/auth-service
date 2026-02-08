@@ -3,16 +3,12 @@
 These fixtures use the real DB (via db_conn) and the ASGI test client.
 """
 
-import hashlib
-import secrets
 import uuid
-from datetime import datetime, timedelta
-from unittest.mock import AsyncMock, patch
+from datetime import datetime
 
 import pytest
 
 from app.services.password import hash_password
-
 
 TEST_PASSWORD = "TestPassword_Xk9m!z"
 

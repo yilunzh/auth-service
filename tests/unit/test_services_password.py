@@ -1,7 +1,5 @@
 """Unit tests for app.services.password — Argon2 hashing."""
 
-import pytest
-
 
 class TestPasswordService:
     async def test_hash_returns_argon2_string(self):

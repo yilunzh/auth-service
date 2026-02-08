@@ -11,10 +11,9 @@ Then start this example:
 
 from __future__ import annotations
 
-from fastapi import Depends, FastAPI, HTTPException, Header
-from pydantic import BaseModel
-
 from auth_client import AuthClient, AuthenticationError, AuthServiceError
+from fastapi import Depends, FastAPI, Header, HTTPException
+from pydantic import BaseModel
 
 AUTH_SERVICE_URL = "http://localhost:8000"
 

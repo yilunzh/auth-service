@@ -63,7 +63,9 @@ async def login_submit(
     ua = request.headers.get("user-agent", "")
 
     try:
-        await auth_service.login_user(conn, email=email, password=password, ip_address=ip, user_agent=ua)
+        await auth_service.login_user(
+            conn, email=email, password=password, ip_address=ip, user_agent=ua
+        )
     except ValueError as exc:
         return templates.TemplateResponse(
             "login.html",

@@ -63,9 +63,7 @@ class TestRefreshTokenPair:
             mock_db.create_refresh_token = AsyncMock()
             from app.services.token import create_refresh_token_pair
 
-            access, refresh = await create_refresh_token_pair(
-                conn, user_id="user-123", role="user"
-            )
+            access, refresh = await create_refresh_token_pair(conn, user_id="user-123", role="user")
 
         assert isinstance(access, str)
         assert isinstance(refresh, str)

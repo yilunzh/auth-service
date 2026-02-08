@@ -1,8 +1,6 @@
 """Integration tests for middleware — security headers, CSRF, rate limiting."""
 
-import pytest
-
-from tests.integration.conftest import _create_user, TEST_PASSWORD
+from tests.integration.conftest import TEST_PASSWORD, _create_user
 
 
 class TestSecurityHeaders:
@@ -48,7 +46,11 @@ class TestCSRF:
         if csrf_cookie:
             resp = await test_client.post(
                 "/auth/login",
-                data={"email": "test@test.com", "password": "TestPass123!", "csrf_token": "wrong-token"},
+                data={
+                    "email": "test@test.com",
+                    "password": "TestPass123!",
+                    "csrf_token": "wrong-token",
+                },
                 cookies={"csrf_token": csrf_cookie},
             )
             assert resp.status_code == 403
