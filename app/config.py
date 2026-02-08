@@ -42,6 +42,9 @@ class Settings(BaseSettings):
     ARGON2_MEMORY_COST: int = 32768
     ARGON2_PARALLELISM: int = 1
 
+    # Rate limiting
+    RATE_LIMIT_FAIL_OPEN: bool = True
+
     # Application
     APP_NAME: str = "Auth Service"
     DEBUG: bool = False
