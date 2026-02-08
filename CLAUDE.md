@@ -111,6 +111,22 @@ Before saying "done":
 2. Use `browser_snapshot` to verify pages load correctly
 3. Compare against design inspiration/expectations
 
+## Virtual Environment
+
+All Python commands (pytest, ruff, pip, uvicorn, etc.) MUST run under the `.venv/` virtual environment. Use the full binary path — never rely on system Python:
+
+```bash
+# Correct
+.venv/bin/python -m pytest tests/ -v
+.venv/bin/python -m ruff check .
+
+# Wrong — uses system Python, missing project dependencies
+python -m pytest tests/ -v
+make test
+```
+
+The example app at `examples/fastapi-app/` has its own `.venv/`. Use that when running example app commands.
+
 ## Decision Guidelines
 
 ### ESCALATE (Ask User)

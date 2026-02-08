@@ -20,7 +20,7 @@
 
 ### Tech Stack
 
-- **Language**: Python 3.11+
+- **Language**: Python 3.9+ (SDK), Python 3.11+ (service)
 - **Framework**: FastAPI (async)
 - **Database**: MySQL 8.0 (aiomysql async driver)
 - **Password hashing**: Argon2id (argon2-cffi)
@@ -183,7 +183,7 @@ auth-service/
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `DATABASE_URL` | No | `mysql://auth_user:auth_pass@localhost:3306/auth_db` | MySQL connection URL |
+| `DATABASE_URL` | No | `mysql://auth_user:auth_pass@mysql:3306/auth_db` | MySQL connection URL (use `mysql` host for Docker, `localhost` for local) |
 | `DB_POOL_MIN` | No | 5 | Min pool connections |
 | `DB_POOL_MAX` | No | 20 | Max pool connections |
 | `JWT_SECRET_KEY` | **Yes** | `CHANGE-ME-IN-PRODUCTION` | JWT signing secret |
@@ -240,11 +240,24 @@ locust -f tests/load/locustfile.py --headless --host http://localhost:8000 -u 10
 locust -f tests/load/locustfile.py --headless --host http://localhost:8000 -u 200 -r 20 -t 60s
 ```
 
+## Development Notes
+
+### Email Verification in Dev
+
+SMTP is not configured by default. After registering a user, verify them manually:
+
+```bash
+docker compose exec mysql mysql -u auth_user -pauth_pass auth_db \
+  -e "UPDATE users SET is_verified = 1 WHERE email = 'user@example.com';"
+```
+
+Without this step, login will fail with "Invalid credentials" because unverified accounts cannot authenticate.
+
 ## Deployment
 
 ```bash
 # Build and run
-docker-compose up --build
+make up  # or: docker-compose up --build
 
 # Or run directly
 uvicorn app.main:app --host 0.0.0.0 --port 8000
@@ -257,6 +270,7 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000
 | fastapi | Web framework |
 | uvicorn | ASGI server |
 | aiomysql | Async MySQL driver |
+| cryptography | MySQL 8 caching_sha2_password auth |
 | argon2-cffi | Password hashing |
 | PyJWT | JWT tokens |
 | jinja2 | HTML templates |
@@ -282,6 +296,7 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000
 | 0.1 | 2026-02-08 | Initial project setup |
 | 0.2 | 2026-02-08 | All 48 application files implemented |
 | 0.3 | 2026-02-08 | Tests, breach check, load testing, documentation |
+| 0.4 | 2026-02-08 | DX fixes: Docker DATABASE_URL, cryptography dep, email verification docs, SDK Python 3.9+ |
 
 ---
 

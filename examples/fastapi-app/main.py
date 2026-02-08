@@ -55,9 +55,24 @@ class LoginBody(BaseModel):
     password: str
 
 
+class RefreshBody(BaseModel):
+    refresh_token: str
+
+
 # ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
+
+
+@app.post("/register")
+def register(body: LoginBody):
+    """Register a new user via the auth service."""
+    try:
+        with AuthClient(AUTH_SERVICE_URL) as c:
+            result = c.register(body.email, body.password)
+            return {"message": result.message}
+    except AuthServiceError as e:
+        raise HTTPException(status_code=400, detail=e.detail)
 
 
 @app.post("/login")
@@ -80,7 +95,36 @@ def protected(user=Depends(get_current_user)):
     return {"message": f"Hello, {user.email}!", "user_id": user.id}
 
 
+@app.post("/refresh")
+def refresh(body: RefreshBody):
+    """Exchange a refresh token for a new token pair."""
+    try:
+        with AuthClient(AUTH_SERVICE_URL) as c:
+            tokens = c.refresh(body.refresh_token)
+            return {
+                "access_token": tokens.access_token,
+                "refresh_token": tokens.refresh_token,
+            }
+    except AuthenticationError:
+        raise HTTPException(status_code=401, detail="Invalid or expired refresh token")
+
+
 @app.post("/logout")
-def logout(user=Depends(get_current_user)):
-    """Log out the current session (requires refresh_token in body)."""
-    return {"message": "To fully log out, revoke your refresh token via the auth service."}
+def logout(body: RefreshBody, authorization: str = Header(...)):
+    """Revoke a refresh token to log out the session.
+
+    Requires both a valid Bearer token (Authorization header) and the
+    refresh_token to revoke in the request body.
+    """
+    if not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Invalid authorization header")
+    token = authorization.removeprefix("Bearer ")
+    try:
+        with AuthClient(AUTH_SERVICE_URL) as c:
+            c.set_token(token)
+            result = c.logout(body.refresh_token)
+            return {"message": result.message}
+    except AuthenticationError:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+    except AuthServiceError as e:
+        raise HTTPException(status_code=400, detail=e.detail)

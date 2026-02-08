@@ -34,12 +34,19 @@ uvicorn main:app --port 9000
 
 ## Walkthrough
 
-### 1. Register a user (directly against the auth service)
+### 1. Register a user
 
 ```bash
-curl -s -X POST http://localhost:8000/api/auth/register \
+curl -s -X POST http://localhost:9000/register \
   -H "Content-Type: application/json" \
   -d '{"email": "demo@example.com", "password": "password123"}'
+```
+
+Response:
+```json
+{
+  "message": "Check your email to verify your account"
+}
 ```
 
 ### 2. Verify the user (dev shortcut)
@@ -83,20 +90,54 @@ Response:
 }
 ```
 
-### 5. Try without a token
+### 5. Refresh the token
 
 ```bash
-curl -s http://localhost:9000/protected
-# → 422 (missing Authorization header)
+curl -s -X POST http://localhost:9000/refresh \
+  -H "Content-Type: application/json" \
+  -d '{"refresh_token": "<refresh_token>"}'
+```
 
-curl -s http://localhost:9000/protected \
-  -H "Authorization: Bearer invalid-token"
-# → 401 Invalid or expired token
+Response:
+```json
+{
+  "access_token": "eyJhbGciOi...(new)...",
+  "refresh_token": "e5f6g7h8...(new)..."
+}
+```
+
+### 6. Logout
+
+```bash
+curl -s -X POST http://localhost:9000/logout \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <access_token>" \
+  -d '{"refresh_token": "<refresh_token>"}'
+```
+
+Response:
+```json
+{
+  "message": "Logged out successfully."
+}
+```
+
+### 7. Verify logout worked
+
+Try refreshing with the revoked token — expect a 401:
+
+```bash
+curl -s -X POST http://localhost:9000/refresh \
+  -H "Content-Type: application/json" \
+  -d '{"refresh_token": "<refresh_token>"}'
+# → 401 Invalid or expired refresh token
 ```
 
 ## How It Works
 
-The key pattern is the `get_current_user` dependency:
+The example app proxies all auth operations through its own endpoints, so your frontend only ever talks to one server.
+
+**Token validation** — The `get_current_user` dependency extracts the Bearer token, calls `client.get_me()` against the auth service, and returns the user profile (or 401):
 
 ```python
 def get_current_user(authorization: str = Header(...)):
@@ -106,4 +147,8 @@ def get_current_user(authorization: str = Header(...)):
         return c.get_me()  # validates the token against the auth service
 ```
 
-This creates an `AuthClient`, sets the Bearer token, and calls `get_me()`. If the token is valid, the auth service returns the user profile. If not, the SDK raises `AuthenticationError`, which the dependency converts to a 401 response.
+**Registration** — `POST /register` calls `client.register(email, password)` to create a new account. In production the user would receive a verification email; in dev you verify manually via MySQL.
+
+**Token refresh** — `POST /refresh` calls `client.refresh(refresh_token)` to exchange a refresh token for a new access/refresh pair without re-entering credentials.
+
+**Logout** — `POST /logout` requires a valid Bearer token (to prove identity) plus the refresh token to revoke. It calls `client.logout(refresh_token)` to revoke the token server-side, preventing further use.
