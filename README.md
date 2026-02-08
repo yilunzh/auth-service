@@ -25,10 +25,16 @@ A production-grade authentication service built with FastAPI and MySQL. Provides
 # Clone and start everything
 git clone <repo-url> && cd auth-service
 cp .env.example .env  # edit JWT_SECRET_KEY at minimum
-docker-compose up --build
+make up               # or: docker-compose up --build
 ```
 
 This starts the API on `http://localhost:8000` and MySQL on port 3306. The database schema is applied automatically on first boot.
+
+> **Dev tip — email verification:** SMTP isn't configured by default, so verification emails won't send. After registering a user, verify them manually:
+> ```bash
+> docker compose exec mysql mysql -u auth_user -pauth_pass auth_db \
+>   -e "UPDATE users SET is_verified = 1 WHERE email = 'alice@example.com';"
+> ```
 
 ### Manual Setup
 
