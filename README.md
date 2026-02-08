@@ -43,7 +43,7 @@ This starts the API on `http://localhost:8000` and MySQL on port 3306. The datab
 docker-compose up -d mysql
 
 # 2. Install dependencies
-python -m venv venv && source venv/bin/activate
+python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
 # 3. Set required env vars (or create .env)

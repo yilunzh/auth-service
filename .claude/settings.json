@@ -19,7 +19,7 @@
       "Bash(python -m pytest:*)",
       "Bash(pip install:*)",
       "Bash(pip install -r:*)",
-      "Bash(source venv/bin/activate:*)",
+      "Bash(source .venv/bin/activate:*)",
       "Bash(lsof -i:*)",
       "Bash(touch .playwright-verified:*)"
     ]
