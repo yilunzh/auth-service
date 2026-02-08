@@ -19,7 +19,6 @@ os.environ["SMTP_HOST"] = "localhost"
 os.environ["SMTP_PORT"] = "1025"
 os.environ["BASE_URL"] = "http://testserver"
 
-import asyncio
 from pathlib import Path
 from unittest.mock import AsyncMock, patch
 
@@ -29,20 +28,6 @@ import pytest
 
 # Now safe to import app modules
 from app.main import app
-
-
-@pytest.fixture(scope="session")
-def event_loop():
-    """Create a single event loop for the entire test session.
-
-    Required by pytest-asyncio <1.0 (used in CI) so that session-scoped
-    async fixtures share one loop.  Newer pytest-asyncio (>=1.0) uses the
-    asyncio_default_*_loop_scope config options in pyproject.toml instead,
-    but silently tolerates this fixture.
-    """
-    loop = asyncio.new_event_loop()
-    yield loop
-    loop.close()
 
 
 @pytest.fixture(scope="session")
