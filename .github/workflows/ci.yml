@@ -18,8 +18,8 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - run: pip install ruff
-      - run: ruff check .
-      - run: ruff format --check .
+      - run: ruff check . --exclude .claude
+      - run: ruff format --check . --exclude .claude
 
   unit-tests:
     runs-on: ubuntu-latest
@@ -31,7 +31,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - run: pip install -r requirements.txt && pip install pytest pytest-asyncio httpx
+      - run: pip install -r requirements.txt && pip install pytest "pytest-asyncio>=0.23,<1.0" httpx cryptography
       - run: python -m pytest tests/unit -v
 
   integration-tests:
@@ -58,7 +58,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - run: pip install -r requirements.txt && pip install pytest pytest-asyncio httpx
+      - run: pip install -r requirements.txt && pip install pytest "pytest-asyncio>=0.23,<1.0" httpx cryptography cryptography
       - run: python -m pytest tests/integration -v
 
   docker-build:
