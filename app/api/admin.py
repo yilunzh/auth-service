@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.db import audit as db_audit
 from app.db import users as db_users
-from app.dependencies import get_db, get_current_user, require_admin
+from app.dependencies import get_db, require_admin
 from app.models.user import (
     ChangeActiveRequest,
     ChangeRoleRequest,

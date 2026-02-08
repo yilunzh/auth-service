@@ -1,7 +1,6 @@
 """Unit tests for app.services.auth — business logic with mocked DB."""
 
-from unittest.mock import AsyncMock, patch, MagicMock
-from datetime import datetime, timedelta
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -14,7 +13,9 @@ def conn():
 
 
 class TestRegisterUser:
-    async def test_register_success(self, conn, mock_db_users, mock_password_service, mock_email_service):
+    async def test_register_success(
+        self, conn, mock_db_users, mock_password_service, mock_email_service
+    ):
         mock_db_users.get_user_by_email.return_value = None
         mock_db_users.create_user.return_value = make_user(is_verified=False)
 

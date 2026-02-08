@@ -26,7 +26,7 @@ async def get_current_user(
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Missing or invalid authorization header")
 
-    token = authorization[len("Bearer "):]
+    token = authorization[len("Bearer ") :]
 
     try:
         payload = decode_access_token(token)

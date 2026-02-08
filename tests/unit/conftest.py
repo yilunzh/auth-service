@@ -1,6 +1,6 @@
 """Unit test fixtures with mocked DB and services."""
 
-from datetime import datetime, timedelta
+from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest

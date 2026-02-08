@@ -1,7 +1,5 @@
 """Integration tests for the health check endpoint."""
 
-import pytest
-
 
 class TestHealth:
     async def test_health_check(self, test_client, db_conn):

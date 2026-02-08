@@ -68,9 +68,7 @@ async def rotate_api_key(
 ):
     """Rotate an API key. The old key remains valid for the grace period."""
     try:
-        result = await api_key_service.rotate_key(
-            conn, key_id=key_id, grace_hours=grace_hours
-        )
+        result = await api_key_service.rotate_key(conn, key_id=key_id, grace_hours=grace_hours)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     return ApiKeyCreatedResponse(**result)

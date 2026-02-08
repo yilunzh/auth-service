@@ -12,8 +12,7 @@ import secrets
 
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
-from starlette.responses import Response, JSONResponse
-
+from starlette.responses import JSONResponse, Response
 
 CSRF_COOKIE_NAME = "csrf_token"
 CSRF_TOKEN_LENGTH = 32

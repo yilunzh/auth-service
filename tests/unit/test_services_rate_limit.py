@@ -3,8 +3,6 @@
 from datetime import datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock
 
-import pytest
-
 
 def _make_conn_with_cursor(rows=None):
     """Create a mock connection with a cursor that returns the given rows."""
@@ -25,7 +23,9 @@ class TestCheckRateLimit:
 
         from app.services.rate_limit import check_rate_limit
 
-        allowed = await check_rate_limit(conn, "ip", "127.0.0.1", max_attempts=10, window_seconds=60)
+        allowed = await check_rate_limit(
+            conn, "ip", "127.0.0.1", max_attempts=10, window_seconds=60
+        )
         assert allowed is True
 
     async def test_allowed_under_limit(self):
@@ -36,7 +36,9 @@ class TestCheckRateLimit:
 
         from app.services.rate_limit import check_rate_limit
 
-        allowed = await check_rate_limit(conn, "ip", "127.0.0.1", max_attempts=10, window_seconds=60)
+        allowed = await check_rate_limit(
+            conn, "ip", "127.0.0.1", max_attempts=10, window_seconds=60
+        )
         assert allowed is True
 
     async def test_blocked_over_limit(self):
@@ -47,7 +49,9 @@ class TestCheckRateLimit:
 
         from app.services.rate_limit import check_rate_limit
 
-        allowed = await check_rate_limit(conn, "ip", "127.0.0.1", max_attempts=10, window_seconds=60)
+        allowed = await check_rate_limit(
+            conn, "ip", "127.0.0.1", max_attempts=10, window_seconds=60
+        )
         assert allowed is False
 
     async def test_blocked_explicit(self):
@@ -62,7 +66,9 @@ class TestCheckRateLimit:
 
         from app.services.rate_limit import check_rate_limit
 
-        allowed = await check_rate_limit(conn, "ip", "127.0.0.1", max_attempts=10, window_seconds=60)
+        allowed = await check_rate_limit(
+            conn, "ip", "127.0.0.1", max_attempts=10, window_seconds=60
+        )
         assert allowed is False
 
     async def test_window_expired_resets(self):
@@ -77,7 +83,9 @@ class TestCheckRateLimit:
 
         from app.services.rate_limit import check_rate_limit
 
-        allowed = await check_rate_limit(conn, "ip", "127.0.0.1", max_attempts=10, window_seconds=60)
+        allowed = await check_rate_limit(
+            conn, "ip", "127.0.0.1", max_attempts=10, window_seconds=60
+        )
         assert allowed is True
 
 

@@ -1,8 +1,5 @@
 """Unit tests for breached password Bloom filter."""
 
-import tempfile
-from pathlib import Path
-
 import pytest
 
 from app.services.breach_check import init_bloom_filter, is_breached, reset

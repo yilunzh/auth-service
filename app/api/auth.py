@@ -4,9 +4,9 @@ import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 
-from app.db import users as db_users
 from app.db import tokens as db_tokens
-from app.dependencies import get_current_user, get_client_ip, get_db, get_user_agent
+from app.db import users as db_users
+from app.dependencies import get_client_ip, get_current_user, get_db, get_user_agent
 from app.models.auth import (
     ChangePasswordRequest,
     ForgotPasswordRequest,
@@ -60,7 +60,9 @@ async def login(body: LoginRequest, request: Request, conn=Depends(get_db)):
 async def refresh(body: RefreshRequest, conn=Depends(get_db)):
     """Exchange a valid refresh token for a new access + refresh token pair."""
     try:
-        access_token, refresh_token = await token_service.refresh_access_token(conn, body.refresh_token)
+        access_token, refresh_token = await token_service.refresh_access_token(
+            conn, body.refresh_token
+        )
     except ValueError as exc:
         raise HTTPException(status_code=401, detail=str(exc))
     return TokenResponse(access_token=access_token, refresh_token=refresh_token)

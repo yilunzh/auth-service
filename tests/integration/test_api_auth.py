@@ -1,13 +1,5 @@
 """Integration tests for auth API endpoints — full request/response cycle."""
 
-import hashlib
-import secrets
-import uuid
-from datetime import datetime, timedelta
-from unittest.mock import AsyncMock, patch
-
-import pytest
-
 from tests.integration.conftest import TEST_PASSWORD, _create_user, _login_user
 
 

@@ -61,7 +61,9 @@ async def db_pool():
         await cur.execute("USE auth_db_test")
 
         # Run the migration script
-        migration_path = Path(__file__).parent.parent / "app" / "db" / "migrations" / "001_initial.sql"
+        migration_path = (
+            Path(__file__).parent.parent / "app" / "db" / "migrations" / "001_initial.sql"
+        )
         sql = migration_path.read_text()
         # Execute each statement separately
         for statement in sql.split(";"):
