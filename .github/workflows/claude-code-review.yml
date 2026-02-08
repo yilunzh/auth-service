@@ -1,0 +1,93 @@
+name: Claude Security Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  claude-review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: read
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run Claude Code Review
+        id: claude-review
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+
+            You are performing a SECURITY-FOCUSED code review for a FastAPI-based authentication microservice.
+            Use the repository's CLAUDE.md for guidance on the codebase architecture and conventions.
+
+            ## Security Checklist - Review ALL changes for:
+
+            ### Authentication & Authorization
+            - JWT token handling (signing, validation, expiration, algorithm pinning)
+            - Password handling (Argon2 hashing, strength requirements, breach checks)
+            - Refresh token rotation and revocation
+            - Authorization checks on all protected routes (get_current_user, require_admin)
+            - API key generation, storage, and rotation security
+
+            ### Data Protection
+            - **CRITICAL**: User data isolation - admin-only endpoints must enforce role checks
+            - Sensitive data exposure in responses, logs, or error messages (tokens, passwords, key material)
+            - Token/secret storage (hashed, not plaintext)
+            - PII handling in audit logs
+
+            ### Injection Attacks
+            - SQL injection (must use parameterized queries with %s placeholders, no f-strings in SQL)
+            - XSS in Jinja2 templates (proper escaping)
+            - Command injection
+            - CSRF protection on form-based endpoints
+
+            ### Input Validation
+            - User input sanitization via Pydantic models
+            - Email validation
+            - Password strength enforcement
+            - API parameter validation (pagination bounds, enum values)
+
+            ### Security Headers & Configuration
+            - CORS configuration (overly permissive origins)
+            - Security headers middleware (CSP, X-Frame-Options, X-Content-Type-Options, HSTS)
+            - Rate limiting on authentication endpoints
+            - Secret/credential exposure in code (no hardcoded keys, tokens, passwords)
+            - Docker security (non-root user, minimal base image)
+
+            ### Session & Token Security
+            - Refresh token binding and revocation on password change
+            - Session listing and selective revocation
+            - Token expiration enforcement
+            - Logout-all invalidation completeness
+
+            ## Output Format
+            Structure your review as:
+
+            ### Security Review Summary
+            - Overall assessment (PASS/CONCERNS FOUND)
+            - Number of issues by severity
+
+            ### Issues Found (if any)
+            For each issue:
+            - **Severity**: CRITICAL / HIGH / MEDIUM / LOW
+            - **File**: `filename:line_number`
+            - **Issue**: Description of the vulnerability
+            - **Remediation**: Specific fix recommendation
+
+            ### Positive Security Practices (optional)
+            Note any good security patterns observed in the changes.
+
+            Use `gh pr comment` with your Bash tool to leave your review as a comment on the PR.
+
+          claude_args: '--allowed-tools "Bash(gh issue view:*),Bash(gh search:*),Bash(gh issue list:*),Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*)"'
