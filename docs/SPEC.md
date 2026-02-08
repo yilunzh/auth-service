@@ -12,9 +12,9 @@
 
 ## Current State
 
-- **Status**: MVP Complete
+- **Status**: MVP Complete + Security Hardening
 - **Last updated**: 2026-02-08
-- **Test coverage**: ~85 tests (unit + integration)
+- **Test coverage**: ~100 tests (unit + integration), ~54% line coverage
 
 ## Architecture
 
@@ -28,7 +28,9 @@
 - **Templates**: Jinja2
 - **Email**: aiosmtplib
 - **Containerization**: Docker + docker-compose
-- **Testing**: pytest + pytest-asyncio + httpx
+- **Testing**: pytest + pytest-asyncio + pytest-cov + httpx
+- **Type checking**: mypy (conservative mode)
+- **Security scanning**: bandit
 - **Load testing**: Locust
 
 ### Project Structure
@@ -38,7 +40,7 @@ auth-service/
 ├── app/
 │   ├── main.py              # FastAPI app + lifespan + middleware
 │   ├── config.py            # Pydantic settings from env
-│   ├── dependencies.py      # FastAPI dependency injectors
+│   ├── dependencies.py      # FastAPI deps + trusted proxy IP resolution
 │   ├── api/
 │   │   ├── health.py        # GET /health
 │   │   ├── auth.py          # /api/auth/* endpoints
@@ -54,7 +56,7 @@ auth-service/
 │   │       └── 001_initial.sql
 │   ├── middleware/
 │   │   ├── csrf.py          # Double-submit cookie CSRF
-│   │   ├── rate_limit.py    # 3-tier rate limiting
+│   │   ├── rate_limit.py    # 3-tier rate limiting (configurable fail-open/closed)
 │   │   └── security.py      # Security headers
 │   ├── models/
 │   │   ├── auth.py          # Request/response schemas
@@ -174,6 +176,9 @@ auth-service/
 | JWT + opaque refresh tokens | Stateless access (15-min), revocable refresh (30-day) |
 | SHA-256 for token storage | Only hashes stored in DB; raw tokens never persisted |
 | MySQL-backed rate limiting | No additional infrastructure (Redis), atomic upserts |
+| Configurable fail-open/closed rate limiter | Backwards-compatible default (fail-open), production can opt into fail-closed |
+| Trusted proxy for X-Forwarded-For | Strictest default (ignore header); only trust when explicitly configured |
+| JWT secret validation at startup | Block production with default/weak secret; warn in debug mode |
 | Double-submit cookie CSRF | Standard pattern for form-based auth pages |
 | Bloom filter for breach check | O(1) lookup, ~170KB memory for 100K passwords, 0.1% FP |
 | Fail-open breach check | Availability over strictness if filter fails to load |
@@ -196,6 +201,8 @@ auth-service/
 | `SMTP_PASSWORD` | No | — | SMTP password |
 | `SMTP_FROM_EMAIL` | No | `noreply@example.com` | Sender address |
 | `CORS_ORIGINS` | No | — | Comma-separated allowed origins |
+| `TRUSTED_PROXIES` | No | — | Comma-separated trusted proxy IPs/CIDRs (e.g., `10.0.0.1,172.16.0.0/12`) |
+| `RATE_LIMIT_FAIL_OPEN` | No | True | Allow requests when rate limiter DB fails (False = return 503) |
 | `ARGON2_TIME_COST` | No | 2 | Argon2 iterations |
 | `ARGON2_MEMORY_COST` | No | 32768 | Argon2 memory (KB) |
 | `ARGON2_PARALLELISM` | No | 1 | Argon2 parallelism |
@@ -219,12 +226,17 @@ pytest tests/ -v
 # Run only unit tests (no DB needed)
 pytest tests/unit -v
 
+# Run with coverage
+pytest tests/unit -v --cov=app --cov-report=term-missing
+
 # Run only integration tests
 pytest tests/integration -v
 
-# Run with markers
-pytest -m unit -v
-pytest -m integration -v
+# Type checking
+mypy app/
+
+# Security scanning
+bandit -r app/ -c pyproject.toml
 ```
 
 ### Load Testing
@@ -277,17 +289,24 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000
 | python-multipart | Form parsing |
 | pydantic[email] | Data validation |
 | aiosmtplib | Async email |
+| pytest-cov | Test coverage reporting |
+| mypy | Static type checking |
+| bandit | Security linting |
 
 ## Security Features
 
 - **Password hashing**: Argon2id with configurable cost parameters
 - **Breached password detection**: Bloom filter with 100K common passwords
 - **JWT tokens**: Short-lived (15 min) with opaque refresh tokens
+- **JWT secret validation**: Blocks production startup with default/weak/short secrets
 - **CSRF protection**: Double-submit cookies on form endpoints
-- **Rate limiting**: Per-IP (20/min), per-email (10/min), per-IP+email (5/min)
+- **Rate limiting**: Per-IP (20/min), per-email (10/min), per-IP+email (5/min) on login, register, forgot-password, and refresh endpoints
+- **Configurable rate limit failure mode**: Fail-open (default) or fail-closed (503) when rate limiter DB is unavailable
+- **Trusted proxy support**: X-Forwarded-For only trusted from configured proxy IPs/CIDRs; ignored by default
 - **Security headers**: CSP, X-Frame-Options, MIME sniffing, XSS protection
 - **Email enumeration prevention**: Silent failures on forgot-password
 - **SQL injection prevention**: Parameterized queries throughout
+- **Static analysis**: bandit security scanning in CI
 
 ## Version History
 
@@ -297,6 +316,8 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000
 | 0.2 | 2026-02-08 | All 48 application files implemented |
 | 0.3 | 2026-02-08 | Tests, breach check, load testing, documentation |
 | 0.4 | 2026-02-08 | DX fixes: Docker DATABASE_URL, cryptography dep, email verification docs, SDK Python 3.9+ |
+| 0.5 | 2026-02-08 | Security hardening: JWT validation, rate limit refresh, fail-open config, trusted proxies |
+| 0.6 | 2026-02-08 | CI improvements: mypy type checking, pytest-cov coverage, bandit security scanning |
 
 ---
 
