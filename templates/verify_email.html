@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Verify Email{% endblock %}
+
+{% block content %}
+<div class="auth-card">
+    {% if success %}
+    <h1>Email verified!</h1>
+    <p class="auth-message">Your email has been verified. You can now sign in.</p>
+    <a href="/auth/login" class="btn btn-primary">Sign in</a>
+    {% else %}
+    <h1>Verification failed</h1>
+    <p class="auth-message">This verification link is invalid or expired.</p>
+    {% endif %}
+</div>
+{% endblock %}

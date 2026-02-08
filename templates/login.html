@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In{% endblock %}
+
+{% block content %}
+<div class="auth-card">
+    <h1>Sign in to your account</h1>
+
+    <form method="POST" action="/auth/login" class="auth-form" id="auth-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        {% if redirect_uri %}
+        <input type="hidden" name="redirect_uri" value="{{ redirect_uri }}">
+        {% endif %}
+
+        <div class="form-group">
+            <label for="email">Email address</label>
+            <input type="email" id="email" name="email" autofocus required autocomplete="email" placeholder="you@example.com">
+            <span class="field-error" id="email-error"></span>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <div class="password-wrapper">
+                <input type="password" id="password" name="password" required autocomplete="current-password">
+                <button type="button" class="toggle-password" aria-label="Toggle password visibility">Show</button>
+            </div>
+            <a href="/auth/forgot-password" class="forgot-link">Forgot password?</a>
+            <span class="field-error" id="password-error"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Sign in</button>
+    </form>
+
+    <p class="auth-footer">Don't have an account? <a href="/auth/register">Sign up</a></p>
+</div>
+{% endblock %}
