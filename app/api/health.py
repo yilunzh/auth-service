@@ -3,6 +3,8 @@
 Verifies the application is running and the database pool is reachable.
 """
 
+from __future__ import annotations
+
 from datetime import datetime, timezone
 
 from fastapi import APIRouter

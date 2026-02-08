@@ -4,7 +4,7 @@
 
 ## Overview
 
-**auth-service** — A backend authentication service built with Python and FastAPI. Provides user registration, login, and token-based authentication via a REST API.
+**auth-service** — A production-grade backend authentication service built with Python and FastAPI. Provides user registration, login, JWT-based authentication, API key management, and admin operations via a REST API, plus hosted HTML auth pages.
 
 **Target users**: Other services and applications needing authentication
 
@@ -12,88 +12,276 @@
 
 ## Current State
 
-- **Status**: Planning
+- **Status**: MVP Complete
 - **Last updated**: 2026-02-08
+- **Test coverage**: ~85 tests (unit + integration)
 
 ## Architecture
 
-> Filled in once tech stack decisions are made.
-
 ### Tech Stack
 
-- **Language**: Python
-- **Framework**: FastAPI
-- **Database**: TBD
-- **Deployment**: TBD
+- **Language**: Python 3.11+
+- **Framework**: FastAPI (async)
+- **Database**: MySQL 8.0 (aiomysql async driver)
+- **Password hashing**: Argon2id (argon2-cffi)
+- **JWT**: PyJWT (HS256)
+- **Templates**: Jinja2
+- **Email**: aiosmtplib
+- **Containerization**: Docker + docker-compose
+- **Testing**: pytest + pytest-asyncio + httpx
+- **Load testing**: Locust
 
 ### Project Structure
 
 ```
-[Directory tree will go here once project is scaffolded]
+auth-service/
+├── app/
+│   ├── main.py              # FastAPI app + lifespan + middleware
+│   ├── config.py            # Pydantic settings from env
+│   ├── dependencies.py      # FastAPI dependency injectors
+│   ├── api/
+│   │   ├── health.py        # GET /health
+│   │   ├── auth.py          # /api/auth/* endpoints
+│   │   ├── keys.py          # /api/keys/* endpoints
+│   │   └── admin.py         # Admin endpoints
+│   ├── db/
+│   │   ├── pool.py          # aiomysql connection pool
+│   │   ├── users.py         # User CRUD
+│   │   ├── tokens.py        # Token CRUD (refresh, verification, reset)
+│   │   ├── api_keys.py      # API key CRUD
+│   │   ├── audit.py         # Audit log queries
+│   │   └── migrations/
+│   │       └── 001_initial.sql
+│   ├── middleware/
+│   │   ├── csrf.py          # Double-submit cookie CSRF
+│   │   ├── rate_limit.py    # 3-tier rate limiting
+│   │   └── security.py      # Security headers
+│   ├── models/
+│   │   ├── auth.py          # Request/response schemas
+│   │   ├── user.py          # User schemas
+│   │   └── api_key.py       # API key schemas
+│   ├── pages/
+│   │   └── auth.py          # HTML form routes
+│   └── services/
+│       ├── auth.py          # Auth business logic
+│       ├── password.py      # Argon2 hashing (thread pool)
+│       ├── token.py         # JWT + refresh tokens
+│       ├── api_key.py       # API key lifecycle
+│       ├── email.py         # Async SMTP
+│       ├── rate_limit.py    # Rate limit service
+│       ├── audit.py         # Audit logging
+│       └── breach_check.py  # Bloom filter breach check
+├── data/
+│   └── breached_passwords.txt  # Top 100K breached passwords
+├── tests/
+│   ├── conftest.py          # Root fixtures (DB pool, test client)
+│   ├── unit/                # ~40 unit tests (mocked DB)
+│   ├── integration/         # ~45 integration tests (real MySQL)
+│   └── load/                # Locust load tests
+├── static/                  # CSS + JS for hosted pages
+├── templates/               # Jinja2 HTML templates
+├── docker-compose.yml
+├── Dockerfile
+├── requirements.txt
+└── requirements-dev.txt
 ```
 
 ### Key Components
 
-[To be defined when features are implemented]
-
-## Features
-
-### Implemented
-
-(none yet)
-
-### In Progress
-
-(none yet)
-
-### Planned
-
-- User registration
-- User login
-- JWT token management
-- Password hashing and verification
-
-## Key Decisions
-
-> Document major architectural decisions and their rationale.
-
-(none yet)
+**Layered Architecture:**
+1. **API Layer** (`app/api/`) — FastAPI route handlers
+2. **Service Layer** (`app/services/`) — Business logic
+3. **Data Layer** (`app/db/`) — MySQL operations via aiomysql
+4. **Middleware** (`app/middleware/`) — CSRF, rate limiting, security headers
 
 ## API Reference
 
-> Endpoints will be documented here as they are implemented.
+### Health
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| GET | `/health` | None | Service health + DB connectivity |
+
+### Auth (Public)
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| POST | `/api/auth/register` | None | Create account, send verification email |
+| POST | `/api/auth/login` | None | Authenticate, return JWT + refresh token |
+| POST | `/api/auth/refresh` | None | Exchange refresh token for new pair |
+| POST | `/api/auth/forgot-password` | None | Send password reset email |
+| POST | `/api/auth/reset-password` | None | Reset password with token |
+| POST | `/api/auth/verify-email` | None | Verify email with token |
+
+### Auth (Authenticated)
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| GET | `/api/auth/me` | Bearer | Get current user profile |
+| PUT | `/api/auth/me` | Bearer | Update profile |
+| PUT | `/api/auth/password` | Bearer | Change password |
+| DELETE | `/api/auth/me` | Bearer | Delete account (GDPR) |
+| POST | `/api/auth/logout` | Bearer | Revoke single refresh token |
+| POST | `/api/auth/logout-all` | Bearer | Revoke all refresh tokens |
+| GET | `/api/auth/sessions` | Bearer | List active sessions |
+
+### Admin
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| GET | `/api/auth/users` | Admin | List users (paginated) |
+| PUT | `/api/auth/users/{id}/role` | Admin | Change user role |
+| PUT | `/api/auth/users/{id}/active` | Admin | Activate/deactivate user |
+| GET | `/api/admin/audit-log` | Admin | Query audit log |
+
+### API Keys (Admin)
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| POST | `/api/keys/` | Admin | Create API key |
+| GET | `/api/keys/` | Admin | List API keys |
+| GET | `/api/keys/{id}` | Admin | Get key details |
+| POST | `/api/keys/{id}/rotate` | Admin | Rotate key (grace period) |
+| DELETE | `/api/keys/{id}` | Admin | Revoke key |
+
+### Hosted Pages
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET/POST | `/auth/login` | Login form |
+| GET/POST | `/auth/register` | Registration form |
+| GET/POST | `/auth/forgot-password` | Forgot password form |
+| GET/POST | `/auth/reset-password` | Reset password form |
+| GET | `/auth/verify-email` | Email verification |
 
 ## Data Models
 
-> Key data structures will be documented here as they are defined.
+### Database Tables (7)
+
+1. **users** — id, email, password_hash, role (user/admin), is_active, is_verified, display_name, phone, metadata (JSON), timestamps
+2. **refresh_tokens** — id, user_id (FK), token_hash, expires_at, revoked_at, user_agent, ip_address
+3. **api_keys** — id, name, key_prefix, key_hash, created_by (FK), expires_at, revoked_at, usage_count, rate_limit
+4. **rate_limits** — id, key_type, key_value (unique), attempts, window_start, blocked_until
+5. **email_verification_tokens** — id, user_id (FK), token_hash, expires_at, used_at
+6. **password_reset_tokens** — id, user_id (FK), token_hash, expires_at, used_at
+7. **audit_log** — id, user_id, event, ip_address, user_agent, details (JSON)
+
+## Key Decisions
+
+| Decision | Rationale |
+|----------|-----------|
+| Argon2id for passwords | Memory-hard, resistant to GPU/ASIC attacks |
+| JWT + opaque refresh tokens | Stateless access (15-min), revocable refresh (30-day) |
+| SHA-256 for token storage | Only hashes stored in DB; raw tokens never persisted |
+| MySQL-backed rate limiting | No additional infrastructure (Redis), atomic upserts |
+| Double-submit cookie CSRF | Standard pattern for form-based auth pages |
+| Bloom filter for breach check | O(1) lookup, ~170KB memory for 100K passwords, 0.1% FP |
+| Fail-open breach check | Availability over strictness if filter fails to load |
+| Thread pool for Argon2 | Prevents blocking the async event loop |
 
 ## Environment Variables
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `SECRET_KEY` | Yes | Application secret for JWT signing |
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `DATABASE_URL` | No | `mysql://auth_user:auth_pass@localhost:3306/auth_db` | MySQL connection URL |
+| `DB_POOL_MIN` | No | 5 | Min pool connections |
+| `DB_POOL_MAX` | No | 20 | Max pool connections |
+| `JWT_SECRET_KEY` | **Yes** | `CHANGE-ME-IN-PRODUCTION` | JWT signing secret |
+| `JWT_ALGORITHM` | No | `HS256` | JWT algorithm |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | No | 15 | Access token TTL |
+| `REFRESH_TOKEN_EXPIRE_DAYS` | No | 30 | Refresh token TTL |
+| `SMTP_HOST` | No | `localhost` | SMTP server |
+| `SMTP_PORT` | No | 587 | SMTP port |
+| `SMTP_USER` | No | — | SMTP username |
+| `SMTP_PASSWORD` | No | — | SMTP password |
+| `SMTP_FROM_EMAIL` | No | `noreply@example.com` | Sender address |
+| `CORS_ORIGINS` | No | — | Comma-separated allowed origins |
+| `ARGON2_TIME_COST` | No | 2 | Argon2 iterations |
+| `ARGON2_MEMORY_COST` | No | 32768 | Argon2 memory (KB) |
+| `ARGON2_PARALLELISM` | No | 1 | Argon2 parallelism |
+| `DEBUG` | No | False | Debug mode |
+| `BASE_URL` | No | `http://localhost:8000` | Base URL for email links |
 
 ## Testing
 
 ### Running Tests
 
 ```bash
-[Test command TBD]
+# Start MySQL
+docker-compose up -d mysql
+
+# Install dev dependencies
+pip install -r requirements-dev.txt
+
+# Run all tests
+pytest tests/ -v
+
+# Run only unit tests (no DB needed)
+pytest tests/unit -v
+
+# Run only integration tests
+pytest tests/integration -v
+
+# Run with markers
+pytest -m unit -v
+pytest -m integration -v
+```
+
+### Load Testing
+
+```bash
+# Create load test users
+python -m tests.load.setup_users --count 1000
+
+# Smoke run
+locust -f tests/load/locustfile.py --headless --host http://localhost:8000 -u 10 -r 2 -t 10s
+
+# Full load test
+locust -f tests/load/locustfile.py --headless --host http://localhost:8000 -u 200 -r 20 -t 60s
 ```
 
 ## Deployment
 
-[Deployment instructions once determined]
+```bash
+# Build and run
+docker-compose up --build
+
+# Or run directly
+uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
 
 ## External Dependencies
 
-[To be determined during implementation]
+| Package | Purpose |
+|---------|---------|
+| fastapi | Web framework |
+| uvicorn | ASGI server |
+| aiomysql | Async MySQL driver |
+| argon2-cffi | Password hashing |
+| PyJWT | JWT tokens |
+| jinja2 | HTML templates |
+| python-multipart | Form parsing |
+| pydantic[email] | Data validation |
+| aiosmtplib | Async email |
+
+## Security Features
+
+- **Password hashing**: Argon2id with configurable cost parameters
+- **Breached password detection**: Bloom filter with 100K common passwords
+- **JWT tokens**: Short-lived (15 min) with opaque refresh tokens
+- **CSRF protection**: Double-submit cookies on form endpoints
+- **Rate limiting**: Per-IP (20/min), per-email (10/min), per-IP+email (5/min)
+- **Security headers**: CSP, X-Frame-Options, MIME sniffing, XSS protection
+- **Email enumeration prevention**: Silent failures on forgot-password
+- **SQL injection prevention**: Parameterized queries throughout
 
 ## Version History
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 0.1 | 2026-02-08 | Initial project setup from template |
+| 0.1 | 2026-02-08 | Initial project setup |
+| 0.2 | 2026-02-08 | All 48 application files implemented |
+| 0.3 | 2026-02-08 | Tests, breach check, load testing, documentation |
 
 ---
 

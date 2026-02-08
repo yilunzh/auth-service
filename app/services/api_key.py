@@ -6,6 +6,8 @@ SHA-256 hash is stored; the full key is returned once on creation and
 never again.
 """
 
+from __future__ import annotations
+
 import hashlib
 import secrets
 import uuid

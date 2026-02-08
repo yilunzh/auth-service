@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from fastapi import Depends, Header, HTTPException, Request
 
 from app.db.pool import get_connection

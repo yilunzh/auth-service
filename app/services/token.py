@@ -4,6 +4,8 @@ Access tokens are stateless JWTs (HS256, 15-min TTL).
 Refresh tokens are random opaque strings stored as SHA-256 hashes in the DB.
 """
 
+from __future__ import annotations
+
 import hashlib
 import secrets
 import uuid

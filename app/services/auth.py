@@ -5,6 +5,8 @@ verification by coordinating the DB layer, password service, token service,
 and email service.
 """
 
+from __future__ import annotations
+
 import hashlib
 import secrets
 import uuid
@@ -15,6 +17,7 @@ from app.db import users as db_users
 from app.services import email as email_service
 from app.services import password as password_service
 from app.services import token as token_service
+from app.services.breach_check import is_breached
 
 
 def _hash_token(raw_token: str) -> str:
@@ -37,6 +40,12 @@ async def register_user(conn, email: str, password: str) -> dict:
     existing = await db_users.get_user_by_email(conn, email)
     if existing is not None:
         raise ValueError("Email is already registered")
+
+    # Check breached passwords
+    if is_breached(password):
+        raise ValueError(
+            "This password has been found in a data breach. Please choose a different password."
+        )
 
     # Hash password and create user
     pw_hash = await password_service.hash_password(password)
@@ -116,6 +125,11 @@ async def change_password(conn, user_id: str, old_password: str, new_password: s
     if not valid:
         raise ValueError("Current password is incorrect")
 
+    if is_breached(new_password):
+        raise ValueError(
+            "This password has been found in a data breach. Please choose a different password."
+        )
+
     new_hash = await password_service.hash_password(new_password)
     await db_users.update_user_password(conn, user_id, new_hash)
     await token_service.revoke_all_tokens(conn, user_id)
@@ -158,6 +172,11 @@ async def reset_password(conn, token: str, new_password: str) -> None:
     token_row = await db_tokens.get_reset_token_by_hash(conn, token_hash)
     if token_row is None:
         raise ValueError("Invalid or expired reset token")
+
+    if is_breached(new_password):
+        raise ValueError(
+            "This password has been found in a data breach. Please choose a different password."
+        )
 
     new_hash = await password_service.hash_password(new_password)
     await db_users.update_user_password(conn, token_row["user_id"], new_hash)

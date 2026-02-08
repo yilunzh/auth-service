@@ -6,6 +6,8 @@ All errors are swallowed and logged to prevent audit failures from
 interrupting application flows.
 """
 
+from __future__ import annotations
+
 import asyncio
 import logging
 

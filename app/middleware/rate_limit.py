@@ -9,6 +9,8 @@ Enforces three tiers of rate limits on login, register, and forgot-password:
 Uses the rate_limits table in MySQL via app.db.pool.get_connection.
 """
 
+from __future__ import annotations
+
 import json
 import logging
 import time

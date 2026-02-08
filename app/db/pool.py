@@ -4,6 +4,8 @@ Parses DATABASE_URL and manages a module-level connection pool with
 async context manager access.
 """
 
+from __future__ import annotations
+
 import contextlib
 from urllib.parse import urlparse
 

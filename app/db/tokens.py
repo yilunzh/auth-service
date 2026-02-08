@@ -5,6 +5,8 @@ All functions are async, take a connection (conn) as the first parameter,
 and use parameterized queries with %s placeholders.
 """
 
+from __future__ import annotations
+
 import uuid
 from datetime import datetime
 

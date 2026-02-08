@@ -4,6 +4,7 @@ Creates the app, configures middleware, mounts static files, sets up
 Jinja2 templates, and wires up routers.
 """
 
+import logging
 import os
 from contextlib import asynccontextmanager
 
@@ -17,13 +18,24 @@ from app.db.pool import close_pool, init_pool
 from app.middleware.csrf import CSRFMiddleware
 from app.middleware.rate_limit import RateLimitMiddleware
 from app.middleware.security import SecurityHeadersMiddleware
+from app.services.breach_check import init_bloom_filter
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Manage application startup and shutdown lifecycle."""
+    # Configure logging
+    logging.basicConfig(
+        level=logging.DEBUG if settings.DEBUG else logging.INFO,
+        format="%(asctime)s %(levelname)-8s %(name)s: %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
+    logging.getLogger("aiomysql").setLevel(logging.WARNING)
+    logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
+
     # Startup
     await init_pool(settings)
+    init_bloom_filter()
     yield
     # Shutdown
     await close_pool()
