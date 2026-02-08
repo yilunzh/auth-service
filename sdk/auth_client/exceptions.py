@@ -1,5 +1,7 @@
 """Typed exception hierarchy for Auth Service API errors."""
 
+from __future__ import annotations
+
 
 class AuthServiceError(Exception):
     """Base exception for all Auth Service errors."""

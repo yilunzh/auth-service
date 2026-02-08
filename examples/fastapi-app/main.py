@@ -5,6 +5,8 @@ Run the auth service first:
 
 Then start this example:
     cd examples/fastapi-app
+    python -m venv .venv
+    source .venv/bin/activate
     pip install -r requirements.txt
     uvicorn main:app --port 9000
 """

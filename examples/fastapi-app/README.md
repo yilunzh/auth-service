@@ -8,15 +8,27 @@ A minimal FastAPI application demonstrating how to integrate the Auth Service cl
 
 ```bash
 cd auth-service
+cp .env.example .env              # create local config (defaults work for Docker)
 make up
 ```
 
-2. **Install dependencies and start the example app**:
+> **Note:** `.env.example` defaults to `mysql` as the database host, which resolves
+> to the MySQL container inside Docker networking. If you're running the auth service
+> outside Docker, change the host to `localhost` in your `.env`.
+
+2. **Create a virtual environment and install dependencies**:
 
 ```bash
 cd examples/fastapi-app
+python -m venv .venv
+source .venv/bin/activate           # on Windows: .venv\Scripts\activate
 pip install -e ../../sdk            # install the SDK
 pip install -r requirements.txt     # install fastapi + uvicorn
+```
+
+3. **Start the example app**:
+
+```bash
 uvicorn main:app --port 9000
 ```
 
@@ -30,7 +42,17 @@ curl -s -X POST http://localhost:8000/api/auth/register \
   -d '{"email": "demo@example.com", "password": "password123"}'
 ```
 
-### 2. Login via the example app
+### 2. Verify the user (dev shortcut)
+
+SMTP isn't configured in the default dev setup, so the verification email won't send.
+Mark the user as verified directly in MySQL:
+
+```bash
+docker compose exec mysql mysql -u auth_user -pauth_pass auth_db \
+  -e "UPDATE users SET is_verified = 1 WHERE email = 'demo@example.com';"
+```
+
+### 3. Login via the example app
 
 ```bash
 curl -s -X POST http://localhost:9000/login \
@@ -46,7 +68,7 @@ Response:
 }
 ```
 
-### 3. Access a protected endpoint
+### 4. Access a protected endpoint
 
 ```bash
 curl -s http://localhost:9000/protected \
@@ -61,7 +83,7 @@ Response:
 }
 ```
 
-### 4. Try without a token
+### 5. Try without a token
 
 ```bash
 curl -s http://localhost:9000/protected
