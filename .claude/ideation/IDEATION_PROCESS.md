@@ -47,6 +47,7 @@
 │  - User reacts, selects direction                                       │
 │  - Define scope (in/out)                                                │
 │  - Write user stories / requirements                                    │
+│  - Define non-functional requirements (security, performance, CI, observability) │
 │  - Define success criteria                                              │
 │                                                                         │
 │  Output: requirements.md                                                │
@@ -95,6 +96,9 @@
 │  - Define data models                                                   │
 │  - Define API contracts                                                 │
 │  - Identify risks and mitigations                                       │
+│  - Define CI/quality pipeline (linting, type checking, coverage, security scanning) │
+│  - Define security requirements (auth, rate limiting, secrets, input validation) │
+│  - Cross-reference against docs/PATTERNS.md Security Checklist          │
 │  - Suggest high-level implementation phases                             │
 │                                                                         │
 │  Output: architecture.md                                                │

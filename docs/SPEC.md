@@ -16,6 +16,24 @@
 - **Last updated**: 2026-02-08
 - **Test coverage**: ~100 tests (unit + integration), ~54% line coverage
 
+## Requirements
+
+### Functional
+
+- User registration and login with email verification
+- JWT-based authentication with refresh token rotation
+- API key management (create, rotate, revoke)
+- Admin operations (user management, audit log)
+- Hosted HTML auth pages
+- Password reset flow via email
+
+### Non-Functional
+
+- **Security**: All auth endpoints rate-limited, Argon2id password hashing, JWT secret validated at startup, CSRF on forms, trusted proxy support, breached password detection
+- **CI/Quality**: mypy type checking, pytest-cov coverage (~54%), bandit security scanning, ruff linting
+- **Performance**: Async throughout (FastAPI + aiomysql), thread pool for Argon2, connection pooling
+- **Observability**: Audit log for security events, structured error responses
+
 ## Architecture
 
 ### Tech Stack
@@ -318,6 +336,15 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000
 | 0.4 | 2026-02-08 | DX fixes: Docker DATABASE_URL, cryptography dep, email verification docs, SDK Python 3.9+ |
 | 0.5 | 2026-02-08 | Security hardening: JWT validation, rate limit refresh, fail-open config, trusted proxies |
 | 0.6 | 2026-02-08 | CI improvements: mypy type checking, pytest-cov coverage, bandit security scanning |
+
+## Known Gaps
+
+> Issues identified during self-review that haven't been addressed yet.
+> Ordered by priority (high → low). Remove items as they're resolved.
+
+- [ ] Coverage at ~54% — target 80%+ for auth-critical paths — severity: medium
+- [ ] No structured logging (print-based) — severity: low
+- [ ] No health check for external dependencies (SMTP) — severity: low
 
 ---
 

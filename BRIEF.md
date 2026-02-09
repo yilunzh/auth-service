@@ -19,6 +19,16 @@ Other services and applications that need user authentication capabilities.
 - Secure password handling
 - RESTful API endpoints
 
+## Non-Functional Requirements (optional)
+
+> These shape how Claude builds, not just what it builds. Skip any that don't apply.
+
+- **Security**: [e.g., "all auth endpoints rate-limited", "secrets validated at startup", "no raw SQL"]
+- **CI/Quality**: [e.g., "type checking required", "80%+ coverage", "security scanning"]
+- **Performance**: [e.g., "< 200ms p95 latency", "handle 1000 concurrent users"]
+- **Observability**: [e.g., "structured logging", "audit trail for admin actions"]
+- **Deployment**: [e.g., "Docker required", "must run on ARM", "12-factor app"]
+
 ## Constraints (optional)
 
 - **Tech stack**: Python / FastAPI

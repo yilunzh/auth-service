@@ -42,7 +42,11 @@ Before writing ANY implementation code, you MUST:
    - User-facing text (error messages, labels)
    - Edge cases ("What happens if Z?")
    - Scope boundaries ("Does this include W?")
-3. **Wait for answers** - Do NOT assume. Wrong assumptions = rework.
+3. **Non-functional requirements** (if not covered in BRIEF.md):
+   - Security expectations ("Should all endpoints be rate-limited? What about secrets management?")
+   - CI/quality expectations ("Do you want type checking? Coverage thresholds? Security scanning?")
+   - Production readiness ("Structured logging? Audit trails? Graceful degradation?")
+4. **Wait for answers** - Do NOT assume. Wrong assumptions = rework.
 
 **For features with UI**, also clarify:
 - Design inspiration (sites/apps to emulate)
@@ -111,6 +115,24 @@ Before saying "done":
 2. Use `browser_snapshot` to verify pages load correctly
 3. Compare against design inspiration/expectations
 
+### Phase 5: SELF-REVIEW (For Significant Work)
+
+After completing a feature or milestone, review your own work before claiming done:
+
+1. Run `/self-review` to execute the structured review checklist
+2. Present findings as a **prioritized gap list** to the user
+3. User decides which gaps to address now vs. defer to Known Gaps
+
+**When to self-review:**
+- Any feature that touches 5+ files
+- New API endpoints or data models
+- Security-related changes
+- Infrastructure/CI changes
+
+**When to skip:**
+- Bug fixes, typo corrections, config changes
+- Pure refactoring with no behavior change
+
 ## Virtual Environment
 
 All Python commands (pytest, ruff, pip, uvicorn, etc.) MUST run under the `.venv/` virtual environment. Use the full binary path — never rely on system Python:
@@ -169,6 +191,8 @@ Custom hooks are in `.claude/hooks/`:
 - `completion-checklist.py` - **Blocking**: Ensures tests were run before session ends
 - `session-handoff.py` - **Blocking**: Detects incomplete work, requires handoff
 - `spec-update-check.py` - Triggers SPEC.md updates on key phrases
+- `self-review-reminder.py` - **Advisory**: Reminds to run `/self-review` after large changes (5+ files)
+- `pre-flight-check.py` - **Advisory**: Validates environment setup on first prompt (venv, dependencies)
 
 ## Custom Skills
 
